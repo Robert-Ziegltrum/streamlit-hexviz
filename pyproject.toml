@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "streamlit-hexviz"
+version = "0.1.0"
+description = "Simple H3 and S2 map visualizations for Streamlit"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Robert Ziegltrum", email = "robert.ziegltrum@googlemail.com" }]
+keywords = ["streamlit", "h3", "s2", "geospatial", "pydeck", "visualization"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: GIS",
+    "Topic :: Scientific/Engineering :: Visualization",
+]
+requires-python = ">=3.9"
+dependencies = [
+    "streamlit>=1.28.0",
+    "pydeck>=0.8.0",
+    "pandas>=1.5.0",
+    "numpy>=1.24.0",
+    "h3>=3.7.0",
+]
+
+[project.optional-dependencies]
+s2 = ["s2geometry"]           # optional: adds S2 support
+dev = ["pytest", "black", "ruff", "mypy"]
+
+[project.urls]
+Homepage = "https://github.com/Robert-Ziegltrum/streamlit-hexviz"
+Documentation = "https://github.com/Robert-Ziegltrum/streamlit-hexviz#readme"
+Repository = "https://github.com/Robert-Ziegltrum/streamlit-hexviz"
+"Bug Tracker" = "https://github.com/Robert-Ziegltrum/streamlit-hexviz/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["streamlit_hexviz*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
