@@ -93,7 +93,8 @@ def h3_map(
 
     with st.spinner("Binning to H3…"):
         agg_df = points_to_h3(df, lat, lon, resolution, weight, agg)
-        agg_df = add_colour_column(agg_df, "value", transform, colour_scale, alpha)
+        agg_df = add_colour_column(
+            agg_df, "value", transform, colour_scale, alpha)
 
     layer = h3_hexagon_layer(
         agg_df,
@@ -164,7 +165,8 @@ def h3_heatmap(
         agg_df = points_to_h3(df, lat, lon, resolution, weight, agg="sum")
 
     layer = h3_heatmap_layer(agg_df, radius_pixels=radius_pixels)
-    deck = build_deck([layer], agg_df, map_style=map_style, auto_zoom=auto_zoom)
+    deck = build_deck([layer], agg_df, map_style=map_style,
+                      auto_zoom=auto_zoom)
     st.pydeck_chart(deck, key=key)
     return agg_df
 
@@ -212,7 +214,8 @@ def h3_choropleth(
         agg_df = h3_df_to_aggregated(
             df, h3_col, value_col, agg, h3_index_type=h3_index_type
         )
-        agg_df = add_colour_column(agg_df, "value", transform, colour_scale, alpha)
+        agg_df = add_colour_column(
+            agg_df, "value", transform, colour_scale, alpha)
 
     default_tooltip = tooltip or f"<b>H3:</b> {{h3_index}}<br/><b>{value_col}:</b> {{value}}"
     layer = h3_hexagon_layer(
@@ -283,10 +286,12 @@ def s2_map(
 
     with st.spinner("Binning to S2…"):
         agg_df = points_to_s2(df, lat, lon, level, weight, agg)
-        agg_df = add_colour_column(agg_df, "value", transform, colour_scale, alpha)
+        agg_df = add_colour_column(
+            agg_df, "value", transform, colour_scale, alpha)
 
     layer = s2_polygon_layer(agg_df)
-    deck = build_deck([layer], agg_df, map_style=map_style, auto_zoom=auto_zoom)
+    deck = build_deck([layer], agg_df, map_style=map_style,
+                      auto_zoom=auto_zoom)
     st.pydeck_chart(deck, key=key)
     _colour_legend(agg_df["value"], colour_scale, transform)
     return agg_df
@@ -307,7 +312,7 @@ def _sidebar_controls(
     key: str | None,
 ) -> tuple:
     """Render sidebar widgets and return updated values."""
-    k = lambda name: f"{key}_{name}" if key else None  # noqa: E731
+    def k(name): return f"{key}_{name}" if key else None  # noqa: E731
 
     if resolution is not None:
         resolution = st.sidebar.slider(
@@ -373,4 +378,3 @@ def _colour_legend(values: pd.Series, colour_scale: str, transform: str) -> None
         """,
         unsafe_allow_html=True,
     )
-
