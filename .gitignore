@@ -1,1 +1,3 @@
 dist/*
+streamlit_h3viz.egg-info/*
+streamlit_hexviz.egg-info/*
