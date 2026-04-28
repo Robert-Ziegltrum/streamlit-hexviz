@@ -1,13 +1,13 @@
 Metadata-Version: 2.4
 Name: streamlit-hexviz
 Version: 0.1.0
-Summary: Dead-simple H3 and S2 map visualizations for Streamlit
-Author-email: Your Name <you@example.com>
+Summary: Simple H3 and S2 map visualizations for Streamlit
+Author-email: Robert Ziegltrum <robert.ziegltrum@googlemail.com>
 License: MIT
-Project-URL: Homepage, https://github.com/yourname/streamlit-hexviz
-Project-URL: Documentation, https://github.com/yourname/streamlit-hexviz#readme
-Project-URL: Repository, https://github.com/yourname/streamlit-hexviz
-Project-URL: Bug Tracker, https://github.com/yourname/streamlit-hexviz/issues
+Project-URL: Homepage, https://github.com/Robert-Ziegltrum/streamlit-hexviz
+Project-URL: Documentation, https://github.com/Robert-Ziegltrum/streamlit-hexviz#readme
+Project-URL: Repository, https://github.com/Robert-Ziegltrum/streamlit-hexviz
+Project-URL: Bug Tracker, https://github.com/Robert-Ziegltrum/streamlit-hexviz/issues
 Keywords: streamlit,h3,s2,geospatial,pydeck,visualization
 Classifier: Development Status :: 3 - Alpha
 Classifier: Intended Audience :: Developers
@@ -36,7 +36,7 @@ Requires-Dist: mypy; extra == "dev"
 
 # streamlit-hexviz 🗺️
 
-> Dead-simple H3 and S2 map visualisations for Streamlit.
+> Simple H3 and S2 map visualisations for Streamlit.
 
 ```python
 import streamlit_hexviz as shv
@@ -56,6 +56,16 @@ shv.s2_map(df, lat="lat", lon="lon", level=12)
 
 Sidebar controls for resolution, colour scale, opacity, and 3-D extrusion are
 injected automatically — no boilerplate required.
+
+## Screenshots
+
+### H3 hexagon choropleth (simple app)
+
+![H3 hexagon choropleth](assets/streamlit-hexexplore-simple-map.png)
+
+### S2 choropleth
+
+![S2 choropleth](assets/streamlit-hexexplore-s2-example.png)
 
 ---
 
@@ -138,10 +148,21 @@ Same as `h3_map` but uses `level` (0-30) instead of `resolution`.
 
 ## Running the demo
 
+### Visualization the basic maps
 ```bash
 pip install streamlit h3 pydeck numpy pandas
-streamlit run demo/app.py
+streamlit run examples/app_simple.py
 ```
+
+### More interactive app demo
+
+```bash
+pip install streamlit h3 pydeck numpy pandas
+streamlit run examples/demo_app.py
+```
+
+
+
 
 ---
 
