@@ -3,6 +3,7 @@
 > Simple H3 and S2 map visualisations for Streamlit.
 
 [![Demo](https://img.shields.io/badge/demo-live-blue)](https://app-hexviz-example-app.streamlit.app/)
+[![PyPI version](https://img.shields.io/pypi/v/streamlit-hexviz)](https://pypi.org/project/streamlit-hexviz/)
 
 ```python
 import streamlit_hexviz as shv
