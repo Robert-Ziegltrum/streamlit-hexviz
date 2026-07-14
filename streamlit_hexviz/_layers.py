@@ -43,6 +43,39 @@ def h3_hexagon_layer(
     )
 
 
+def a5_pentagon_layer(
+    df: pd.DataFrame,
+    *,
+    elevation_col: str | None = "value",
+    elevation_scale: float = 1.0,
+    pickable: bool = True,
+    extruded: bool = False,
+    opacity: float = 0.8,
+) -> pdk.Layer:
+    """
+    Render A5 cells using pydeck's native A5Layer.
+    Expects columns: a5_index, fill_color ([R,G,B,A]), value (number).
+    No geometry conversion needed — pydeck resolves a5_index internally,
+    mirroring h3_hexagon_layer's use of H3HexagonLayer.
+
+    Requires pydeck>=0.9.2 (first version confirmed to document A5Layer).
+    """
+    return pdk.Layer(
+        "A5Layer",
+        df,
+        get_pentagon="a5_index",
+        get_fill_color="fill_color",
+        get_elevation=elevation_col if (extruded and elevation_col) else 0,
+        elevation_scale=elevation_scale,
+        extruded=extruded,
+        pickable=pickable,
+        opacity=opacity,
+        stroked=True,
+        filled=True,
+        auto_highlight=True,
+    )
+
+
 def h3_heatmap_layer(
     df: pd.DataFrame,
     *,
