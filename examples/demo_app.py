@@ -18,7 +18,7 @@ st.set_page_config(
 )
 
 st.title("🗺️ streamlit-hexviz")
-st.caption("Dead-simple H3 and S2 map visualisations for Streamlit.")
+st.caption("Dead-simple H3, S2 and A5 map visualisations for Streamlit.")
 
 # ── Sidebar: dataset chooser ──────────────────────────────────────────────────
 st.sidebar.header("Dataset")
@@ -33,7 +33,7 @@ st.sidebar.header("Visualisation")
 viz_type = st.sidebar.radio(
     "Map type",
     ["H3 choropleth", "H3 heatmap", "H3 3-D extrusion",
-        "Pre-indexed H3", "S2 choropleth"],
+        "Pre-indexed H3", "S2 choropleth", "A5 map"],
 )
 
 st.sidebar.divider()
@@ -187,6 +187,16 @@ elif viz_type == "S2 choropleth":
             f"S2 support not installed: {e}\n\n"
             "Install with: `pip install \"streamlit-hexviz[s2]\"`"
         )
+elif viz_type == "A5 map":
+    st.subheader("A5 map")
+    shv.a5_map(
+        df,
+        lat="lat",
+        lon="lon",
+        weight=weight_col,
+        key='A5 map'
+    )
+
 
 # ── Footer ────────────────────────────────────────────────────────────────────
 st.divider()
