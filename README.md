@@ -106,7 +106,7 @@ Bins points into pentagonal [A5](https://a5geo.org) cells. Same shape as
 |---|---|---|---|
 | `df` | DataFrame | required | Input data with coordinate columns |
 | `lat`, `lon` | str | `"lat"`, `"lon"` | Coordinate column names |
-| `resolution` | int | 10 | A5 resolution (0-30) |
+| `resolution` | int | 11 | A5 resolution (0-30) |
 | `weight` | str \| None | None | Column to aggregate; None = count points |
 | `agg` | str | `"sum"` | `"sum"`, `"mean"`, `"count"`, `"max"`, `"min"` |
 | `transform` | str | `"linear"` | `"linear"`, `"log"`, `"quantile"` |
@@ -128,7 +128,15 @@ Bins points into pentagonal [A5](https://a5geo.org) cells. Same shape as
 | Parameter | Default | Description |
 |---|---|---|
 | `a5_col` | `"a5_index"` | Column containing A5 cell IDs |
+| `a5_index_type` | `"hex"` | `"hex"` (hex string tokens) or `"int"` (raw 64-bit ints) |
 | `value_col` | `"value"` | Column to visualise |
+
+A5 cell IDs are 64-bit integers, which exceed JavaScript's safe integer
+range — `a5_map`/`a5_choropleth` always store and pass `a5_index` as a hex
+string internally (via `a5.u64_to_hex`) to avoid precision loss when
+pydeck serialises the DataFrame to JSON for the browser. Pass
+`a5_index_type="int"` to `a5_choropleth` if your source column has raw ints;
+they'll be converted automatically.
 
 ---
 
@@ -157,15 +165,15 @@ Bins points into pentagonal [A5](https://a5geo.org) cells. Same shape as
 
 A5 pentagons roughly quarter in area per resolution step (vs. H3's ~7x
 factor), so equivalent detail sits at a higher resolution number. Figures
-below are order-of-magnitude approximations pending calibration against
-`a5.cell_area(resolution)` — treat as a starting point, not exact.
+below are computed directly via `a5.cell_area(resolution)`.
 
-| Resolution | Approx. area | Typical use |
+| Resolution | Avg area | Typical use |
 |---|---|---|
-| 3 | ~650,000 km² | Country-level |
-| 10 | ~40 km² | City-level |
-| 15 | ~0.04 km² | Neighbourhood |
-| 20 | ~0.00004 km² | Block-level |
+| 3 | ~531,000 km² | Subcontinent-level |
+| 8 | ~519 km² | Country/region-level |
+| 11 | ~8 km² | City-level (a5_map default) |
+| 15 | ~0.03 km² | Neighbourhood |
+| 20 | ~31 m² | Parcel/building-level |
 
 ---
 
