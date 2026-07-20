@@ -53,17 +53,30 @@ def a5_pentagon_layer(
     opacity: float = 0.8,
 ) -> pdk.Layer:
     """
-    Render A5 cells using pydeck's native A5Layer.
-    Expects columns: a5_index, fill_color ([R,G,B,A]), value (number).
-    No geometry conversion needed — pydeck resolves a5_index internally,
-    mirroring h3_hexagon_layer's use of H3HexagonLayer.
+    Render A5 cells using pydeck's PolygonLayer.
 
-    Requires pydeck>=0.9.2 (first version confirmed to document A5Layer).
+    NOTE: pydeck's native "A5Layer" is NOT used here. Streamlit's frontend
+    bundles its own fixed deck.gl build with an explicit whitelist of
+    registered layer classes — A5Layer isn't in it yet (confirmed via the
+    browser-console error "No registered class of type A5Layer"), so a
+    pdk.Layer("A5Layer", ...) silently renders nothing in st.pydeck_chart,
+    even though it works fine via pydeck's standalone .to_html(). This is
+    the same class of gap that historically affected GeoJsonLayer and
+    ScenegraphLayer in Streamlit — see visgl/deck.gl#6278.
+
+    PolygonLayer has been supported since Streamlit's earliest deck.gl
+    integration, so this path works today regardless of when/if A5Layer
+    gets whitelisted upstream.
+
+    Expects a "polygon" column of closed [lon, lat] coordinate rings —
+    see a5_utils' points_to_a5()/a5_df_to_aggregated(), which populate it
+    via a5.cell_to_boundary(). Also expects fill_color ([R,G,B,A]) and
+    value (number).
     """
     return pdk.Layer(
-        "A5Layer",
+        "PolygonLayer",
         df,
-        get_pentagon="a5_index",
+        get_polygon="polygon",
         get_fill_color="fill_color",
         get_elevation=elevation_col if (extruded and elevation_col) else 0,
         elevation_scale=elevation_scale,
@@ -72,6 +85,8 @@ def a5_pentagon_layer(
         opacity=opacity,
         stroked=True,
         filled=True,
+        get_line_color=[255, 255, 255, 60],
+        line_width_min_pixels=1,
         auto_highlight=True,
     )
 

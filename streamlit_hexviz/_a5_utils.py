@@ -14,8 +14,18 @@ Cell IDs are represented as hex strings (via a5.u64_to_hex /
 a5.hex_to_u64), not raw Python ints. A5 cell IDs are 64-bit, which
 exceeds JavaScript's safe integer range (2^53) — pydeck serialises
 DataFrame columns to JSON for the browser, so raw ints risk silent
-precision loss there. Hex strings round-trip safely, and match the
-`pentagon: string` field type used in deck.gl's own A5Layer example.
+precision loss there. Hex strings round-trip safely.
+
+Rendering strategy: pentagon boundaries are computed here in Python via
+a5.cell_to_boundary() and attached as a "polygon" column, then rendered
+with pydeck's PolygonLayer — NOT pydeck's native "A5Layer". Streamlit's
+frontend bundles a fixed deck.gl build with an explicit layer-class
+whitelist that doesn't include A5Layer yet (confirmed: browser console
+shows "No registered class of type A5Layer" even though the Python side
+builds the spec fine). PolygonLayer has been supported since Streamlit's
+earliest deck.gl integration, so this works today regardless of when (or
+whether) A5Layer gets whitelisted upstream. See _layers.py's
+a5_pentagon_layer() for the layer-building side of this.
 """
 from __future__ import annotations
 
@@ -75,6 +85,17 @@ def a5_resolution_area_km2(resolution: int) -> float:
     return a5.cell_area(resolution) / 1e6
 
 
+def _cell_to_polygon(hex_token: str) -> list[list[float]]:
+    """
+    Closed ring of [lon, lat] pairs for a pentagon, ready for pydeck's
+    PolygonLayer get_polygon accessor. a5.cell_to_boundary already returns
+    a closed ring (first point == last point) as (lon, lat) tuples, so
+    this only needs to reshape tuples into lists for JSON serialisation.
+    """
+    boundary = a5.cell_to_boundary(a5.hex_to_u64(hex_token))
+    return [[lon, lat] for lon, lat in boundary]
+
+
 def points_to_a5(
     df: pd.DataFrame,
     lat: str,
@@ -86,10 +107,8 @@ def points_to_a5(
     """
     Bin lat/lon points into A5 cells and aggregate.
 
-    Returns DataFrame with: a5_index (hex str), value, lat (centroid), lon (centroid).
-    No geometry column needed — pydeck's A5Layer resolves pentagon
-    boundaries from the a5_index directly (get_pentagon), the same way
-    H3HexagonLayer resolves hex boundaries from get_hexagon.
+    Returns DataFrame with: a5_index (hex str), value, lat (centroid),
+    lon (centroid), polygon (closed [lon, lat] ring for PolygonLayer).
     """
     _require_a5()
     validate_resolution(resolution)
@@ -121,6 +140,7 @@ def points_to_a5(
                  for idx in grouped["a5_index"]]
     grouped["lon"] = [c[0] for c in centroids]
     grouped["lat"] = [c[1] for c in centroids]
+    grouped["polygon"] = [_cell_to_polygon(idx) for idx in grouped["a5_index"]]
 
     return grouped
 
@@ -134,7 +154,8 @@ def a5_df_to_aggregated(
 ) -> pd.DataFrame:
     """
     Aggregate a DataFrame that already has an A5 index column.
-    Returns: a5_index (hex str), value, lat (centroid), lon (centroid).
+    Returns: a5_index (hex str), value, lat (centroid), lon (centroid),
+    polygon (closed [lon, lat] ring for PolygonLayer).
     """
     _require_a5()
 
@@ -159,5 +180,6 @@ def a5_df_to_aggregated(
                  for idx in grouped["a5_index"]]
     grouped["lon"] = [c[0] for c in centroids]
     grouped["lat"] = [c[1] for c in centroids]
+    grouped["polygon"] = [_cell_to_polygon(idx) for idx in grouped["a5_index"]]
 
     return grouped
