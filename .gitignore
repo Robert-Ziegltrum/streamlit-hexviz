@@ -8,3 +8,5 @@ tests/__pycache__/*
 streamlit_hexviz/__py_cache__/*
 
 *.pyc
+
+poetry.lock
