@@ -314,7 +314,7 @@ def a5_map(
     *,
     lat: str = "lat",
     lon: str = "lon",
-    resolution: int = 10,
+    resolution: int = 11,
     weight: str | None = None,
     agg: str = "sum",
     transform: str = "linear",
@@ -335,7 +335,7 @@ def a5_map(
     ----------
     df                  : DataFrame with coordinate columns
     lat, lon            : coordinate column names
-    resolution          : A5 resolution (0-30, default 10 — see A5_RANGE)
+    resolution          : A5 resolution (0-30, default 11 — see A5_RANGE)
     weight              : column to aggregate; None = count points
     agg                 : "sum" | "mean" | "count" | "max" | "min"
     transform           : "linear" | "log" | "quantile"
@@ -398,6 +398,7 @@ def a5_choropleth(
     df: pd.DataFrame,
     *,
     a5_col: str = "a5_index",
+    a5_index_type: Literal["hex", "int"] = "hex",
     value_col: str = "value",
     agg: str = "sum",
     transform: str = "linear",
@@ -428,7 +429,8 @@ def a5_choropleth(
         )
 
     with st.spinner("Rendering A5 choropleth…"):
-        agg_df = a5_df_to_aggregated(df, a5_col, value_col, agg)
+        agg_df = a5_df_to_aggregated(
+            df, a5_col, value_col, agg, a5_index_type=a5_index_type)
         agg_df = add_colour_column(
             agg_df, "value", transform, colour_scale, alpha)
 

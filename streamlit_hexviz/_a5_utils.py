@@ -3,26 +3,24 @@ A5 grid utilities: point binning and cell aggregation.
 
 A5 (https://a5geo.org) partitions the globe into pentagonal cells across
 31 resolution levels (0 = coarsest, continent-scale; 30 = finest,
-millimetre-scale), addressed as unsigned 64-bit cell IDs.
+~30mm^2), addressed as unsigned 64-bit cell IDs.
 
-IMPORTANT — PyPI name collision:
-`pip install a5` on public PyPI currently resolves to an unrelated package
-(an OpenAI-agent helper), NOT the A5 geospatial index. If your local `a5`
-import is the geospatial library, make sure it's installed from the
-correct source (e.g. a git URL or private index) rather than a bare
-`a5` PyPI dependency — otherwise downstream installs of this extra will
-silently pull the wrong package. See pyproject.toml's `a5` extra.
+Install: pip install "streamlit-hexviz[a5]"  ->  pulls in `pya5` from PyPI,
+which is imported as `import a5`. This is the official package published
+by A5's own maintainer (felixpalmer) — verified against the real API
+below, not inferred from the JS reference docs.
 
-API assumption:
-This module calls `a5.lonlat_to_cell`, `a5.cell_to_lonlat`, matching the
-A5 JS reference API (lonLatToCell / cellToLonLat) translated to Python's
-snake_case convention, the same way h3-py v4 mirrors the H3 JS/C API.
-Verify these names against your installed `a5` build — if they differ,
-this is the only file that needs adjusting.
+Cell IDs are represented as hex strings (via a5.u64_to_hex /
+a5.hex_to_u64), not raw Python ints. A5 cell IDs are 64-bit, which
+exceeds JavaScript's safe integer range (2^53) — pydeck serialises
+DataFrame columns to JSON for the browser, so raw ints risk silent
+precision loss there. Hex strings round-trip safely, and match the
+`pentagon: string` field type used in deck.gl's own A5Layer example.
 """
 from __future__ import annotations
 
 import pandas as pd
+from typing import Literal
 
 try:
     import a5
@@ -36,30 +34,45 @@ def _require_a5() -> None:
         raise ImportError(
             "a5 is required for A5 support.\n"
             "Install with:\n"
-            "  pip install \"streamlit-hexviz[a5]\"\n"
-            "\n"
-            "Note: verify this resolves to the A5 geospatial library "
-            "(https://a5geo.org), not the unrelated PyPI package of the "
-            "same name."
+            "  pip install \"streamlit-hexviz[a5]\""
         )
 
 
-# A5 resolution levels: 0 (coarsest) to 30 (finest).
+def _coerce_a5_token(value: object, *, a5_index_type: Literal["hex", "int"]) -> str:
+    """Coerce an A5 cell value into the canonical hex-string token."""
+    _require_a5()
+
+    if a5_index_type == "hex":
+        return str(value)
+    if a5_index_type == "int":
+        return a5.u64_to_hex(int(value))
+    raise ValueError(
+        f"a5_index_type must be 'hex' or 'int', got {a5_index_type!r}")
+
+
+# A5 resolution levels: 0 (coarsest) to 30 (finest) — confirmed via a5.MAX_RESOLUTION.
 A5_RANGE: tuple[int, int] = (0, 30)
 
 # Default resolution for point-binning entry points.
-# TODO: calibrate against a5.cell_area(resolution) so the default visually
-# matches h3_map's res-7 default (~5.16 km^2 average cell area) rather than
-# guessing — A5 halves cell edge length (~quarters area) per resolution
-# step, vs. H3's ~7x area factor per step, so the "equivalent" level sits
-# deeper in A5's 0-30 range than H3's 0-15.
-A5_DEFAULT_RESOLUTION: int = 10
+# Calibrated against a5.cell_area(resolution): H3's res-7 default averages
+# ~5.16 km^2 per cell; A5 resolution 11 averages ~8.1 km^2, the closest
+# match on the log scale (res 12 averages ~2.0 km^2, further away). A5
+# roughly quarters cell area per resolution step vs. H3's ~7x factor per
+# step, hence landing at a higher resolution number for similar detail.
+A5_DEFAULT_RESOLUTION: int = 11
 
 
 def validate_resolution(resolution: int) -> None:
     lo, hi = A5_RANGE
     if not (lo <= resolution <= hi):
-        raise ValueError(f"A5 resolution must be in {A5_RANGE}, got {resolution}")
+        raise ValueError(
+            f"A5 resolution must be in {A5_RANGE}, got {resolution}")
+
+
+def a5_resolution_area_km2(resolution: int) -> float:
+    """Average cell area at a given A5 resolution, in km^2."""
+    _require_a5()
+    return a5.cell_area(resolution) / 1e6
 
 
 def points_to_a5(
@@ -73,7 +86,7 @@ def points_to_a5(
     """
     Bin lat/lon points into A5 cells and aggregate.
 
-    Returns DataFrame with: a5_index, value, lat (centroid), lon (centroid).
+    Returns DataFrame with: a5_index (hex str), value, lat (centroid), lon (centroid).
     No geometry column needed — pydeck's A5Layer resolves pentagon
     boundaries from the a5_index directly (get_pentagon), the same way
     H3HexagonLayer resolves hex boundaries from get_hexagon.
@@ -83,12 +96,15 @@ def points_to_a5(
 
     work = df[[lat, lon]].copy()
     work["_weight"] = df[weight].values if weight else 1.0
+    # a5.lonlat_to_cell takes the coordinate as a single (lon, lat) pair,
+    # not two separate positional args.
     work["a5_index"] = [
-        a5.lonlat_to_cell(row[lon], row[lat], resolution)
+        a5.u64_to_hex(a5.lonlat_to_cell((row[lon], row[lat]), resolution))
         for _, row in df[[lat, lon]].iterrows()
     ]
 
-    agg_map = {"sum": "sum", "mean": "mean", "count": "count", "max": "max", "min": "min"}
+    agg_map = {"sum": "sum", "mean": "mean",
+               "count": "count", "max": "max", "min": "min"}
     if agg not in agg_map:
         raise ValueError(f"agg must be one of {list(agg_map)}, got {agg!r}")
 
@@ -99,10 +115,10 @@ def points_to_a5(
         .rename(columns={"_weight": "value"})
     )
 
-    # Attach centroids (used for map auto-centring).
-    # A5's reference API returns (lon, lat) — note the reversed order vs h3's
-    # cell_to_latlng, which returns (lat, lon).
-    centroids = [a5.cell_to_lonlat(idx) for idx in grouped["a5_index"]]
+    # Attach centroids (used for map auto-centring). a5.cell_to_lonlat
+    # returns (lon, lat) — reversed vs. h3.cell_to_latlng's (lat, lon).
+    centroids = [a5.cell_to_lonlat(a5.hex_to_u64(idx))
+                 for idx in grouped["a5_index"]]
     grouped["lon"] = [c[0] for c in centroids]
     grouped["lat"] = [c[1] for c in centroids]
 
@@ -114,14 +130,16 @@ def a5_df_to_aggregated(
     a5_col: str,
     value_col: str,
     agg: str = "sum",
+    a5_index_type: Literal["hex", "int"] = "hex",
 ) -> pd.DataFrame:
     """
     Aggregate a DataFrame that already has an A5 index column.
-    Returns: a5_index, value, lat (centroid), lon (centroid).
+    Returns: a5_index (hex str), value, lat (centroid), lon (centroid).
     """
     _require_a5()
 
-    agg_fn = {"sum": "sum", "mean": "mean", "count": "count", "max": "max", "min": "min"}
+    agg_fn = {"sum": "sum", "mean": "mean",
+              "count": "count", "max": "max", "min": "min"}
     if agg not in agg_fn:
         raise ValueError(f"agg must be one of {list(agg_fn)}, got {agg!r}")
 
@@ -132,7 +150,13 @@ def a5_df_to_aggregated(
         .rename(columns={a5_col: "a5_index", value_col: "value"})
     )
 
-    centroids = [a5.cell_to_lonlat(idx) for idx in grouped["a5_index"]]
+    # Callers may already have hex tokens or raw 64-bit ints; normalise to hex.
+    grouped["a5_index"] = [
+        _coerce_a5_token(v, a5_index_type=a5_index_type) for v in grouped["a5_index"]
+    ]
+
+    centroids = [a5.cell_to_lonlat(a5.hex_to_u64(idx))
+                 for idx in grouped["a5_index"]]
     grouped["lon"] = [c[0] for c in centroids]
     grouped["lat"] = [c[1] for c in centroids]
 

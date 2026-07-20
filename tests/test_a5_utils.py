@@ -4,18 +4,6 @@ import pytest
 
 a5 = pytest.importorskip("a5")
 
-# Guard against the PyPI name collision: a bare `import a5` can succeed
-# against the unrelated package of the same name, which lacks the
-# geospatial API this module needs. Skip cleanly rather than failing with
-# a confusing AttributeError.
-if not hasattr(a5, "lonlat_to_cell"):
-    pytest.skip(
-        "Installed `a5` package does not expose the A5 geospatial API "
-        "(lonlat_to_cell) — this is likely the unrelated PyPI package of "
-        "the same name, not https://a5geo.org's library.",
-        allow_module_level=True,
-    )
-
 
 def test_points_to_a5_basic_columns_and_rowcount():
     from streamlit_hexviz._a5_utils import points_to_a5
@@ -27,26 +15,46 @@ def test_points_to_a5_basic_columns_and_rowcount():
         }
     )
 
-    out = points_to_a5(df, "lat", "lon", resolution=10, weight=None, agg="sum")
+    out = points_to_a5(df, "lat", "lon", resolution=11, weight=None, agg="sum")
 
     assert {"a5_index", "value", "lat", "lon"}.issubset(out.columns)
     assert len(out) >= 1
     assert out["value"].sum() == pytest.approx(3.0)
+    # a5_index is stored as a hex string, not a raw 64-bit int (which
+    # exceeds JS's safe integer range and risks precision loss in pydeck's
+    # JSON serialisation to the browser).
+    assert isinstance(out.loc[0, "a5_index"], str)
 
 
-def test_a5_df_to_aggregated_accepts_precomputed_index():
+def test_a5_df_to_aggregated_accepts_hex_tokens():
     from streamlit_hexviz._a5_utils import a5_df_to_aggregated
 
-    cell = a5.lonlat_to_cell(-74.0, 40.7, 10)
-    df = pd.DataFrame({"a5_index": [cell, cell], "metric": [1, 2]})
+    cell = a5.lonlat_to_cell((-74.0, 40.7), 11)
+    token = a5.u64_to_hex(cell)
+    df = pd.DataFrame({"a5_index": [token, token], "metric": [1, 2]})
 
-    out = a5_df_to_aggregated(df, "a5_index", "metric", agg="sum")
+    out = a5_df_to_aggregated(df, "a5_index", "metric",
+                              agg="sum", a5_index_type="hex")
 
-    assert out.loc[0, "a5_index"] == cell
+    assert out.loc[0, "a5_index"] == token
     assert out.loc[0, "value"] == 3
     lon, lat = a5.cell_to_lonlat(cell)
     assert out.loc[0, "lon"] == pytest.approx(lon)
     assert out.loc[0, "lat"] == pytest.approx(lat)
+
+
+def test_a5_df_to_aggregated_accepts_int_ids_and_coerces_to_hex():
+    from streamlit_hexviz._a5_utils import a5_df_to_aggregated
+
+    cell = a5.lonlat_to_cell((-74.0, 40.7), 11)
+    token = a5.u64_to_hex(cell)
+    df = pd.DataFrame({"a5_bigint": [cell, cell], "metric": [1, 2]})
+
+    out = a5_df_to_aggregated(
+        df, "a5_bigint", "metric", agg="sum", a5_index_type="int")
+
+    assert out.loc[0, "a5_index"] == token
+    assert out.loc[0, "value"] == 3
 
 
 def test_validate_resolution_rejects_out_of_range():

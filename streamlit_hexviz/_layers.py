@@ -179,7 +179,8 @@ def build_deck(
         # Add a bit of padding so points aren't glued to the edges.
         pad = 1.25
         zoom_lon = math.log2(360.0 / (lon_span * pad))
-        zoom_lat = math.log2(170.0 / (lat_span * pad))  # ~lat range for mercator
+        # ~lat range for mercator
+        zoom_lat = math.log2(170.0 / (lat_span * pad))
         zoom = min(zoom_lon, zoom_lat)
         zoom = float(max(0.0, min(16.0, zoom)))
 
@@ -191,7 +192,8 @@ def build_deck(
         bearing=0,
     )
 
-    tooltip = {"html": tooltip_html, "style": {"color": "white"}} if tooltip_html else None
+    tooltip = {"html": tooltip_html, "style": {
+        "color": "white"}} if tooltip_html else None
 
     return pdk.Deck(
         layers=layers,
@@ -207,4 +209,3 @@ def build_deck(
         }.get(map_style, map_style),
         tooltip=tooltip,
     )
-
