@@ -39,6 +39,12 @@ injected automatically — no boilerplate required.
 
 ---
 
+### A5 map
+
+![S2 choropleth](assets/A5_map.png)
+
+---
+
 ## Installation
 
 ```bash
