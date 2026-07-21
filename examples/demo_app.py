@@ -94,7 +94,7 @@ df = factory(n_points)
 
 # ── Dataset preview ───────────────────────────────────────────────────────────
 with st.expander("Preview raw data", expanded=False):
-    st.dataframe(df.head(200), use_container_width=True)
+    st.dataframe(df.head(200))
     c1, c2, c3 = st.columns(3)
     c1.metric("Rows", f"{len(df):,}")
     c2.metric("Lat range", f"{df['lat'].min():.2f} → {df['lat'].max():.2f}")
