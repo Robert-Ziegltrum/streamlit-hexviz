@@ -10,3 +10,5 @@ streamlit_hexviz/__py_cache__/*
 *.pyc
 
 poetry.lock
+
+.agents/*
