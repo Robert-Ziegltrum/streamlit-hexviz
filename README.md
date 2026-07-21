@@ -45,8 +45,6 @@ injected automatically — no boilerplate required.
 pip install streamlit-hexviz
 # S2 support (optional):
 pip install "streamlit-hexviz[s2]"
-# A5 support (optional):
-pip install "streamlit-hexviz[a5]"
 ```
 
 ---
