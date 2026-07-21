@@ -17,12 +17,19 @@ import pandas as pd
 import streamlit as st
 from typing import Literal
 
+from streamlit_hexviz._a5_utils import (
+    A5_RANGE,
+    a5_df_to_aggregated,
+    points_to_a5,
+    validate_resolution as validate_a5_resolution,
+)
 from streamlit_hexviz._h3_utils import (
     h3_df_to_aggregated,
     points_to_h3,
     validate_resolution,
 )
 from streamlit_hexviz._layers import (
+    a5_pentagon_layer,
     build_deck,
     h3_hexagon_layer,
     h3_heatmap_layer,
@@ -298,6 +305,155 @@ def s2_map(
 
 
 # ---------------------------------------------------------------------------
+# a5_map  —  points → A5 choropleth
+# ---------------------------------------------------------------------------
+
+
+def a5_map(
+    df: pd.DataFrame,
+    *,
+    lat: str = "lat",
+    lon: str = "lon",
+    resolution: int = 11,
+    weight: str | None = None,
+    agg: str = "sum",
+    transform: str = "linear",
+    colour_scale: str = "viridis",
+    alpha: int = 200,
+    extruded: bool = False,
+    elevation_scale: float = 100.0,
+    map_style: str = "dark",
+    auto_zoom: bool = True,
+    tooltip: str | None = None,
+    use_sidebar_controls: bool = True,
+    key: str | None = None,
+) -> pd.DataFrame:
+    """
+    Bin lat/lon points into A5 pentagonal cells and render as a choropleth map.
+
+    Parameters
+    ----------
+    df                  : DataFrame with coordinate columns
+    lat, lon            : coordinate column names
+    resolution          : A5 resolution (0-30, default 11 — see A5_RANGE)
+    weight              : column to aggregate; None = count points
+    agg                 : "sum" | "mean" | "count" | "max" | "min"
+    transform           : "linear" | "log" | "quantile"
+    colour_scale        : one of viridis, plasma, heat, blues, reds, greens
+    alpha               : fill opacity 0-255
+    extruded            : 3-D bar chart mode
+    elevation_scale     : vertical exaggeration when extruded=True
+    map_style           : "dark" | "light" | "road" | "satellite"
+    tooltip             : HTML tooltip; placeholders: {value}, {a5_index}
+    use_sidebar_controls: inject resolution / colour controls into sidebar
+    key                 : Streamlit widget key prefix
+
+    Returns
+    -------
+    Aggregated DataFrame: a5_index, value, lat, lon, fill_color
+    """
+    validate_a5_resolution(resolution)
+
+    if use_sidebar_controls:
+        resolution, colour_scale, transform, alpha, extruded = _a5_sidebar_controls(
+            resolution=resolution,
+            colour_scale=colour_scale,
+            transform=transform,
+            alpha=alpha,
+            extruded=extruded,
+            key=key,
+        )
+
+    with st.spinner("Binning to A5…"):
+        agg_df = points_to_a5(df, lat, lon, resolution, weight, agg)
+        agg_df = add_colour_column(
+            agg_df, "value", transform, colour_scale, alpha)
+
+    layer = a5_pentagon_layer(
+        agg_df,
+        extruded=extruded,
+        elevation_scale=elevation_scale if extruded else 1.0,
+        elevation_col="value" if extruded else None,
+    )
+
+    default_tooltip = tooltip or "<b>A5:</b> {a5_index}<br/><b>Value:</b> {value}"
+    deck = build_deck(
+        [layer],
+        agg_df,
+        map_style=map_style,
+        auto_zoom=auto_zoom,
+        tooltip_html=default_tooltip,
+    )
+    st.pydeck_chart(deck, key=key)
+    _colour_legend(agg_df["value"], colour_scale, transform)
+    return agg_df
+
+
+# ---------------------------------------------------------------------------
+# a5_choropleth  —  pre-indexed A5 DataFrame → choropleth
+# ---------------------------------------------------------------------------
+
+
+def a5_choropleth(
+    df: pd.DataFrame,
+    *,
+    a5_col: str = "a5_index",
+    a5_index_type: Literal["hex", "int"] = "hex",
+    value_col: str = "value",
+    agg: str = "sum",
+    transform: str = "linear",
+    colour_scale: str = "viridis",
+    alpha: int = 200,
+    extruded: bool = False,
+    elevation_scale: float = 100.0,
+    map_style: str = "dark",
+    auto_zoom: bool = True,
+    tooltip: str | None = None,
+    use_sidebar_controls: bool = True,
+    key: str | None = None,
+) -> pd.DataFrame:
+    """
+    Render a choropleth map from a DataFrame that already has A5 indices.
+
+    Use this when your data is already indexed (e.g. came from a database
+    pre-aggregated at A5 resolution).
+    """
+    if use_sidebar_controls:
+        _, colour_scale, transform, alpha, extruded = _a5_sidebar_controls(
+            resolution=None,  # no resolution slider — data is pre-indexed
+            colour_scale=colour_scale,
+            transform=transform,
+            alpha=alpha,
+            extruded=extruded,
+            key=key,
+        )
+
+    with st.spinner("Rendering A5 choropleth…"):
+        agg_df = a5_df_to_aggregated(
+            df, a5_col, value_col, agg, a5_index_type=a5_index_type)
+        agg_df = add_colour_column(
+            agg_df, "value", transform, colour_scale, alpha)
+
+    default_tooltip = tooltip or f"<b>A5:</b> {{a5_index}}<br/><b>{value_col}:</b> {{value}}"
+    layer = a5_pentagon_layer(
+        agg_df,
+        extruded=extruded,
+        elevation_scale=elevation_scale if extruded else 1.0,
+        elevation_col="value" if extruded else None,
+    )
+    deck = build_deck(
+        [layer],
+        agg_df,
+        map_style=map_style,
+        auto_zoom=auto_zoom,
+        tooltip_html=default_tooltip,
+    )
+    st.pydeck_chart(deck, key=key)
+    _colour_legend(agg_df["value"], colour_scale, transform)
+    return agg_df
+
+
+# ---------------------------------------------------------------------------
 # Shared sidebar controls
 # ---------------------------------------------------------------------------
 
@@ -321,6 +477,63 @@ def _sidebar_controls(
             max_value=12,
             value=resolution,
             help="Higher = smaller cells, more detail, slower rendering",
+            key=k("res"),
+        )
+
+    colour_scale = st.sidebar.selectbox(
+        "Colour scale",
+        list(COLOUR_SCALES),
+        index=list(COLOUR_SCALES).index(colour_scale),
+        key=k("cs"),
+    )
+    transform = st.sidebar.selectbox(
+        "Value transform",
+        ["linear", "log", "quantile"],
+        index=["linear", "log", "quantile"].index(transform),
+        help="log is useful for heavy-tailed distributions",
+        key=k("tr"),
+    )
+    alpha = st.sidebar.slider(
+        "Opacity",
+        min_value=50,
+        max_value=255,
+        value=alpha,
+        key=k("alpha"),
+    )
+    extruded = st.sidebar.checkbox(
+        "3-D extrusion",
+        value=extruded,
+        key=k("ext"),
+    )
+    return resolution, colour_scale, transform, alpha, extruded
+
+
+def _a5_sidebar_controls(
+    *,
+    resolution: int | None,
+    colour_scale: str,
+    transform: str,
+    alpha: int,
+    extruded: bool,
+    key: str | None,
+) -> tuple:
+    """
+    Render sidebar widgets for A5 and return updated values.
+
+    Kept separate from _sidebar_controls because A5's resolution range
+    (0-30) doesn't match H3's (0-15) — reusing one slider range for both
+    would either clip A5 or offer meaningless coarse/fine steps for H3.
+    """
+    def k(name): return f"{key}_a5_{name}" if key else None  # noqa: E731
+
+    if resolution is not None:
+        lo, hi = A5_RANGE
+        resolution = st.sidebar.slider(
+            "A5 resolution",
+            min_value=lo,
+            max_value=hi,
+            value=resolution,
+            help="Higher = smaller pentagons, more detail, slower rendering",
             key=k("res"),
         )
 

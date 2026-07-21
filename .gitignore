@@ -1,3 +1,14 @@
 dist/*
 streamlit_h3viz.egg-info/*
 streamlit_hexviz.egg-info/*
+.pytest_cache
+
+tests/__pycache__
+tests/__pycache__/*
+streamlit_hexviz/__py_cache__/*
+
+*.pyc
+
+poetry.lock
+
+.agents/*
