@@ -51,6 +51,12 @@ injected automatically — no boilerplate required.
 pip install streamlit-hexviz
 # S2 support (optional):
 pip install "streamlit-hexviz[s2]"
+# A5 support (optinoal):
+pip install "streamlit-hexviz[a5]"
+
+# A5 & S2 support (optional):
+pip install "streamlit-hexviz[s2,a5]"
+
 ```
 
 ---
@@ -192,7 +198,7 @@ streamlit run examples/app_simple.py
 ### More interactive app demo
 
 ```bash
-pip install streamlit h3 pydeck numpy pandas
+pip install streamlit[s2,a5] h3 pydeck numpy pandas
 streamlit run examples/demo_app.py
 ```
 
