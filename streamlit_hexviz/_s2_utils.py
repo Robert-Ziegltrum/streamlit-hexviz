@@ -7,20 +7,10 @@ import numpy as np
 import pandas as pd
 
 try:
-    import s2geometry as s2
+    import s2sphere as s2
     S2_AVAILABLE = True
 except ImportError:
-    try:
-        # Fallback: pys2 or s2sphere
-        import s2sphere as s2
-
-        S2_AVAILABLE = True
-        _BACKEND = "s2sphere"
-    except ImportError:
-        S2_AVAILABLE = False
-        _BACKEND = None
-else:
-    _BACKEND = "s2geometry"
+    S2_AVAILABLE = False
 
 
 def _require_s2() -> None:
@@ -30,9 +20,8 @@ def _require_s2() -> None:
             "Install with:\n"
             "  pip install \"streamlit-hexviz[s2]\"\n"
             "\n"
-            "Or install an S2 backend directly:\n"
-            "  pip install s2sphere    # pure Python, easier to install\n"
-            "  pip install s2geometry  # C++ binding, faster (wheels may vary)"
+            "Or install directly:\n"
+            "  pip install s2sphere"
         )
 
 
@@ -68,9 +57,11 @@ def points_to_s2(
 
     work = df[[lat, lon]].copy()
     work["_weight"] = df[weight].values if weight else 1.0
-    work["s2_token"] = [_latlng_to_token(row[lat], row[lon], level) for _, row in work.iterrows()]
+    work["s2_token"] = [_latlng_to_token(
+        row[lat], row[lon], level) for _, row in work.iterrows()]
 
-    agg_map = {"sum": "sum", "mean": "mean", "count": "count", "max": "max", "min": "min"}
+    agg_map = {"sum": "sum", "mean": "mean",
+               "count": "count", "max": "max", "min": "min"}
     if agg not in agg_map:
         raise ValueError(f"agg must be one of {list(agg_map)}, got {agg!r}")
 
@@ -90,32 +81,28 @@ def points_to_s2(
 
 
 def _latlng_to_token(lat: float, lon: float, level: int) -> str:
-    if _BACKEND == "s2sphere":
-        ll = s2.LatLng.from_degrees(lat, lon)
-        cell = s2.CellId.from_lat_lng(ll).parent(level)
-        return cell.to_token()
-    raise NotImplementedError("Only s2sphere backend supported in POC")
+    ll = s2.LatLng.from_degrees(lat, lon)
+    cell = s2.CellId.from_lat_lng(ll).parent(level)
+    return cell.to_token()
 
 
 def _attach_s2_geometry(df: pd.DataFrame, level: int) -> pd.DataFrame:
     """Add centroid and polygon boundary for each S2 token."""
-    if _BACKEND == "s2sphere":
-        centroids, polygons = [], []
-        for token in df["s2_token"]:
-            cell_id = s2.CellId.from_token(token)
-            cell = s2.Cell(cell_id)
-            center = s2.LatLng.from_point(cell.get_center())
-            centroids.append((center.lat().degrees, center.lng().degrees))
+    centroids, polygons = [], []
+    for token in df["s2_token"]:
+        cell_id = s2.CellId.from_token(token)
+        cell = s2.Cell(cell_id)
+        center = s2.LatLng.from_point(cell.get_center())
+        centroids.append((center.lat().degrees, center.lng().degrees))
 
-            vertices = []
-            for i in range(4):
-                v = s2.LatLng.from_point(cell.get_vertex(i))
-                vertices.append([v.lng().degrees, v.lat().degrees])
-            vertices.append(vertices[0])  # close ring
-            polygons.append({"type": "Polygon", "coordinates": [vertices]})
+        vertices = []
+        for i in range(4):
+            v = s2.LatLng.from_point(cell.get_vertex(i))
+            vertices.append([v.lng().degrees, v.lat().degrees])
+        vertices.append(vertices[0])  # close ring
+        polygons.append({"type": "Polygon", "coordinates": [vertices]})
 
-        df["lat"] = [c[0] for c in centroids]
-        df["lon"] = [c[1] for c in centroids]
-        df["geometry"] = polygons
+    df["lat"] = [c[0] for c in centroids]
+    df["lon"] = [c[1] for c in centroids]
+    df["geometry"] = polygons
     return df
-

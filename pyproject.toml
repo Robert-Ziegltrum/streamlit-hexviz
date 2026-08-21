@@ -11,23 +11,25 @@ keywords = ["streamlit", "h3", "s2", "a5", "geospatial", "pydeck", "visualizatio
 packages = [{ include = "streamlit_hexviz" }]
 
 [tool.poetry.dependencies]
-python = "^3.9"
-streamlit = "^1.28"
+python = ">=3.10,<4.0"
+streamlit = "^1.40"
 h3 = "^4.0"
 pydeck = "^0.9.2"
-numpy = "*"
-pandas = "*"
+numpy = ">=1.24,<3.0"
+pandas = ">=2.0,<3.0"
 
-# Optional dependencies
-s2geometry = { version = "^0.9", optional = true }
+[tool.poetry.dependencies]
+s2sphere = { version = "^0.2.5", optional = true }
 pya5 = { version = "^0.9", optional = true }
 
 [tool.poetry.extras]
-s2 = ["s2geometry"]
+s2 = ["s2sphere"]
 a5 = ["pya5"]
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0"
+ruff = "^0.6"
+black = "^24.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
