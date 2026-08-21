@@ -1,0 +1,49 @@
+site_name: streamlit-hexviz
+site_description: Simple H3, S2, and A5 map visualisations for Streamlit
+site_url: https://Robert-Ziegltrum.github.io/streamlit-hexviz/
+repo_url: https://github.com/Robert-Ziegltrum/streamlit-hexviz
+repo_name: Robert-Ziegltrum/streamlit-hexviz
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  icon:
+    repo: fontawesome/brands/github
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.top
+    - content.code.copy
+    - content.action.edit
+    - search.suggest
+
+markdown_extensions:
+  - admonition
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - pymdownx.inlinehilite
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - API Reference: api-reference.md
+  - Examples: examples.md
+  - Changelog: changelog.md
