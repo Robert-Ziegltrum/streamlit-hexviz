@@ -12,3 +12,5 @@ streamlit_hexviz/__py_cache__/*
 poetry.lock
 
 .agents/*
+
+*.parquet
