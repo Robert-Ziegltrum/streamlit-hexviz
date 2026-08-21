@@ -18,7 +18,7 @@ pydeck = "^0.9.2"
 numpy = ">=1.24,<3.0"
 pandas = ">=2.0,<3.0"
 
-[tool.poetry.dependencies]
+# Optional dependencies
 s2sphere = { version = "^0.2.5", optional = true }
 pya5 = { version = "^0.9", optional = true }
 
