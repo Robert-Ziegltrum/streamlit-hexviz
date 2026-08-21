@@ -27,6 +27,10 @@ shv.a5_map(df, lat="lat", lon="lon", weight="sales")
 Sidebar controls for resolution, colour scale, opacity, and 3-D extrusion are
 injected automatically — no boilerplate required.
 
+## A5 demo
+
+![S2 choropleth](assets/streamlit-hexviz-a5-example.gif)
+
 ## Screenshots
 
 ### H3 hexagon choropleth (simple app)
