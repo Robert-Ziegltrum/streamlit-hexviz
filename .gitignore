@@ -14,3 +14,5 @@ poetry.lock
 .agents/*
 
 *.parquet
+# MkDocs build output
+site/
