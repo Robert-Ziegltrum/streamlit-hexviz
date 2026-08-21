@@ -27,9 +27,9 @@ s2 = ["s2sphere"]
 a5 = ["pya5"]
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^8.0"
+pytest = "^9.0.3"
 ruff = "^0.6"
-black = "^24.0"
+black = "^26.3.1"
 mkdocs-material = "^9.5"
 
 [build-system]
