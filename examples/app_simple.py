@@ -42,18 +42,19 @@ shv.s2_map(df, lat="lat", lon="lon", level=12, use_sidebar_controls=True)
 # shv.s2_heatmap(df, lat="lat", lon="lon", level=12, use_sidebar_controls=True)
 
 
-
 np.random.seed(42)
 
 hexes = list(h3.grid_disk(h3.latlng_to_cell(40.7128, -74.0060, 8), 15))
 lats, lngs = zip(*[h3.cell_to_latlng(h) for h in hexes])
 
-df = pd.DataFrame({
-    "h3_index": hexes,
-    "lat":      lats,
-    "lng":      lngs,
-    "weight":   np.random.exponential(50, len(hexes)),
-})
+df = pd.DataFrame(
+    {
+        "h3_index": hexes,
+        "lat": lats,
+        "lng": lngs,
+        "weight": np.random.exponential(50, len(hexes)),
+    }
+)
 
 # shv.h3_choropleth(df, h3_col="h3_index", value_col="weight", use_sidebar_controls=True)
 

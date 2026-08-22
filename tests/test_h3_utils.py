@@ -51,4 +51,3 @@ def test_h3_df_to_aggregated_accepts_int_ids_and_coerces_to_string_token():
 
     assert out.loc[0, "h3_index"] == token
     assert out.loc[0, "value"] == 3
-

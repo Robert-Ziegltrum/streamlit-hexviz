@@ -20,5 +20,4 @@ from streamlit_hexviz._components import (
     s2_map,
 )
 
-__all__ = ["h3_map", "h3_heatmap", "h3_choropleth",
-           "s2_map", "a5_map", "a5_choropleth"]
+__all__ = ["h3_map", "h3_heatmap", "h3_choropleth", "s2_map", "a5_map", "a5_choropleth"]

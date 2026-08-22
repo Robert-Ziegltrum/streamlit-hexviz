@@ -1,4 +1,5 @@
 """H3 grid utilities: point binning and cell aggregation."""
+
 from __future__ import annotations
 
 import pandas as pd
@@ -6,6 +7,7 @@ from typing import Literal
 
 try:
     import h3
+
     H3_AVAILABLE = True
 except ImportError:
     H3_AVAILABLE = False
@@ -55,7 +57,13 @@ def points_to_h3(
         for _, row in df[[lat, lon]].iterrows()
     ]
 
-    agg_map = {"sum": "sum", "mean": "mean", "count": "count", "max": "max", "min": "min"}
+    agg_map = {
+        "sum": "sum",
+        "mean": "mean",
+        "count": "count",
+        "max": "max",
+        "min": "min",
+    }
     if agg not in agg_map:
         raise ValueError(f"agg must be one of {list(agg_map)}, got {agg!r}")
 
@@ -87,7 +95,13 @@ def h3_df_to_aggregated(
     """
     _require_h3()
 
-    agg_fn = {"sum": "sum", "mean": "mean", "count": "count", "max": "max", "min": "min"}
+    agg_fn = {
+        "sum": "sum",
+        "mean": "mean",
+        "count": "count",
+        "max": "max",
+        "min": "min",
+    }
     if agg not in agg_fn:
         raise ValueError(f"agg must be one of {list(agg_fn)}, got {agg!r}")
 
@@ -118,4 +132,3 @@ def validate_resolution(resolution: int) -> None:
 def h3_resolution_area_km2(resolution: int) -> float:
     _require_h3()
     return h3.average_hexagon_area(resolution, unit="km^2")
-

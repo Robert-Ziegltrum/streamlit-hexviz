@@ -3,6 +3,7 @@ PyDeck layer builders.
 
 Each function returns a pydeck.Layer ready to add to a pydeck.Deck.
 """
+
 from __future__ import annotations
 
 import math
@@ -178,8 +179,7 @@ def build_deck(
     lat_center = float(df["lat"].mean())
     lon_center = float(df["lon"].mean())
 
-    is_extruded = any(getattr(l, "extruded", False) for l in layers)
-
+    is_extruded = any(getattr(layer, "extruded", False) for layer in layers)
     zoom = float(initial_zoom)
     if auto_zoom:
         lat_span = float(df["lat"].max() - df["lat"].min())
@@ -207,8 +207,9 @@ def build_deck(
         bearing=0,
     )
 
-    tooltip = {"html": tooltip_html, "style": {
-        "color": "white"}} if tooltip_html else None
+    tooltip = (
+        {"html": tooltip_html, "style": {"color": "white"}} if tooltip_html else None
+    )
 
     return pdk.Deck(
         layers=layers,
