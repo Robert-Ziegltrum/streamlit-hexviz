@@ -11,6 +11,7 @@ Each function:
 
 All functions return the aggregated DataFrame so users can inspect it.
 """
+
 from __future__ import annotations
 
 import pandas as pd
@@ -100,8 +101,7 @@ def h3_map(
 
     with st.spinner("Binning to H3…"):
         agg_df = points_to_h3(df, lat, lon, resolution, weight, agg)
-        agg_df = add_colour_column(
-            agg_df, "value", transform, colour_scale, alpha)
+        agg_df = add_colour_column(agg_df, "value", transform, colour_scale, alpha)
 
     layer = h3_hexagon_layer(
         agg_df,
@@ -172,8 +172,7 @@ def h3_heatmap(
         agg_df = points_to_h3(df, lat, lon, resolution, weight, agg="sum")
 
     layer = h3_heatmap_layer(agg_df, radius_pixels=radius_pixels)
-    deck = build_deck([layer], agg_df, map_style=map_style,
-                      auto_zoom=auto_zoom)
+    deck = build_deck([layer], agg_df, map_style=map_style, auto_zoom=auto_zoom)
     st.pydeck_chart(deck, key=key)
     return agg_df
 
@@ -221,10 +220,11 @@ def h3_choropleth(
         agg_df = h3_df_to_aggregated(
             df, h3_col, value_col, agg, h3_index_type=h3_index_type
         )
-        agg_df = add_colour_column(
-            agg_df, "value", transform, colour_scale, alpha)
+        agg_df = add_colour_column(agg_df, "value", transform, colour_scale, alpha)
 
-    default_tooltip = tooltip or f"<b>H3:</b> {{h3_index}}<br/><b>{value_col}:</b> {{value}}"
+    default_tooltip = (
+        tooltip or f"<b>H3:</b> {{h3_index}}<br/><b>{value_col}:</b> {{value}}"
+    )
     layer = h3_hexagon_layer(
         agg_df,
         extruded=extruded,
@@ -293,12 +293,10 @@ def s2_map(
 
     with st.spinner("Binning to S2…"):
         agg_df = points_to_s2(df, lat, lon, level, weight, agg)
-        agg_df = add_colour_column(
-            agg_df, "value", transform, colour_scale, alpha)
+        agg_df = add_colour_column(agg_df, "value", transform, colour_scale, alpha)
 
     layer = s2_polygon_layer(agg_df)
-    deck = build_deck([layer], agg_df, map_style=map_style,
-                      auto_zoom=auto_zoom)
+    deck = build_deck([layer], agg_df, map_style=map_style, auto_zoom=auto_zoom)
     st.pydeck_chart(deck, key=key)
     _colour_legend(agg_df["value"], colour_scale, transform)
     return agg_df
@@ -366,8 +364,7 @@ def a5_map(
 
     with st.spinner("Binning to A5…"):
         agg_df = points_to_a5(df, lat, lon, resolution, weight, agg)
-        agg_df = add_colour_column(
-            agg_df, "value", transform, colour_scale, alpha)
+        agg_df = add_colour_column(agg_df, "value", transform, colour_scale, alpha)
 
     layer = a5_pentagon_layer(
         agg_df,
@@ -430,11 +427,13 @@ def a5_choropleth(
 
     with st.spinner("Rendering A5 choropleth…"):
         agg_df = a5_df_to_aggregated(
-            df, a5_col, value_col, agg, a5_index_type=a5_index_type)
-        agg_df = add_colour_column(
-            agg_df, "value", transform, colour_scale, alpha)
+            df, a5_col, value_col, agg, a5_index_type=a5_index_type
+        )
+        agg_df = add_colour_column(agg_df, "value", transform, colour_scale, alpha)
 
-    default_tooltip = tooltip or f"<b>A5:</b> {{a5_index}}<br/><b>{value_col}:</b> {{value}}"
+    default_tooltip = (
+        tooltip or f"<b>A5:</b> {{a5_index}}<br/><b>{value_col}:</b> {{value}}"
+    )
     layer = a5_pentagon_layer(
         agg_df,
         extruded=extruded,
@@ -468,7 +467,9 @@ def _sidebar_controls(
     key: str | None,
 ) -> tuple:
     """Render sidebar widgets and return updated values."""
-    def k(name): return f"{key}_{name}" if key else None  # noqa: E731
+
+    def k(name):
+        return f"{key}_{name}" if key else None  # noqa: E731
 
     if resolution is not None:
         resolution = st.sidebar.slider(
@@ -524,7 +525,9 @@ def _a5_sidebar_controls(
     (0-30) doesn't match H3's (0-15) — reusing one slider range for both
     would either clip A5 or offer meaningless coarse/fine steps for H3.
     """
-    def k(name): return f"{key}_a5_{name}" if key else None  # noqa: E731
+
+    def k(name):
+        return f"{key}_a5_{name}" if key else None  # noqa: E731
 
     if resolution is not None:
         lo, hi = A5_RANGE
@@ -572,7 +575,7 @@ def _a5_sidebar_controls(
 
 def _colour_legend(values: pd.Series, colour_scale: str, transform: str) -> None:
     """Render a compact colour-legend below the map."""
-    from streamlit_hexviz._transforms import COLOUR_SCALES, apply_transform
+    from streamlit_hexviz._transforms import COLOUR_SCALES
 
     stops = COLOUR_SCALES.get(colour_scale, COLOUR_SCALES["viridis"])
     grad_css = ", ".join(f"rgb{tuple(s)}" for s in stops)

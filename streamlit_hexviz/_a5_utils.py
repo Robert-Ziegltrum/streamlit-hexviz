@@ -27,6 +27,7 @@ earliest deck.gl integration, so this works today regardless of when (or
 whether) A5Layer gets whitelisted upstream. See _layers.py's
 a5_pentagon_layer() for the layer-building side of this.
 """
+
 from __future__ import annotations
 
 import pandas as pd
@@ -34,6 +35,7 @@ from typing import Literal
 
 try:
     import a5
+
     A5_AVAILABLE = True
 except ImportError:
     A5_AVAILABLE = False
@@ -44,7 +46,7 @@ def _require_a5() -> None:
         raise ImportError(
             "a5 is required for A5 support.\n"
             "Install with:\n"
-            "  pip install \"streamlit-hexviz[a5]\""
+            '  pip install "streamlit-hexviz[a5]"'
         )
 
 
@@ -56,8 +58,7 @@ def _coerce_a5_token(value: object, *, a5_index_type: Literal["hex", "int"]) -> 
         return str(value)
     if a5_index_type == "int":
         return a5.u64_to_hex(int(value))
-    raise ValueError(
-        f"a5_index_type must be 'hex' or 'int', got {a5_index_type!r}")
+    raise ValueError(f"a5_index_type must be 'hex' or 'int', got {a5_index_type!r}")
 
 
 # A5 resolution levels: 0 (coarsest) to 30 (finest) — confirmed via a5.MAX_RESOLUTION.
@@ -75,8 +76,7 @@ A5_DEFAULT_RESOLUTION: int = 11
 def validate_resolution(resolution: int) -> None:
     lo, hi = A5_RANGE
     if not (lo <= resolution <= hi):
-        raise ValueError(
-            f"A5 resolution must be in {A5_RANGE}, got {resolution}")
+        raise ValueError(f"A5 resolution must be in {A5_RANGE}, got {resolution}")
 
 
 def a5_resolution_area_km2(resolution: int) -> float:
@@ -122,8 +122,13 @@ def points_to_a5(
         for _, row in df[[lat, lon]].iterrows()
     ]
 
-    agg_map = {"sum": "sum", "mean": "mean",
-               "count": "count", "max": "max", "min": "min"}
+    agg_map = {
+        "sum": "sum",
+        "mean": "mean",
+        "count": "count",
+        "max": "max",
+        "min": "min",
+    }
     if agg not in agg_map:
         raise ValueError(f"agg must be one of {list(agg_map)}, got {agg!r}")
 
@@ -136,8 +141,7 @@ def points_to_a5(
 
     # Attach centroids (used for map auto-centring). a5.cell_to_lonlat
     # returns (lon, lat) — reversed vs. h3.cell_to_latlng's (lat, lon).
-    centroids = [a5.cell_to_lonlat(a5.hex_to_u64(idx))
-                 for idx in grouped["a5_index"]]
+    centroids = [a5.cell_to_lonlat(a5.hex_to_u64(idx)) for idx in grouped["a5_index"]]
     grouped["lon"] = [c[0] for c in centroids]
     grouped["lat"] = [c[1] for c in centroids]
     grouped["polygon"] = [_cell_to_polygon(idx) for idx in grouped["a5_index"]]
@@ -159,8 +163,13 @@ def a5_df_to_aggregated(
     """
     _require_a5()
 
-    agg_fn = {"sum": "sum", "mean": "mean",
-              "count": "count", "max": "max", "min": "min"}
+    agg_fn = {
+        "sum": "sum",
+        "mean": "mean",
+        "count": "count",
+        "max": "max",
+        "min": "min",
+    }
     if agg not in agg_fn:
         raise ValueError(f"agg must be one of {list(agg_fn)}, got {agg!r}")
 
@@ -176,8 +185,7 @@ def a5_df_to_aggregated(
         _coerce_a5_token(v, a5_index_type=a5_index_type) for v in grouped["a5_index"]
     ]
 
-    centroids = [a5.cell_to_lonlat(a5.hex_to_u64(idx))
-                 for idx in grouped["a5_index"]]
+    centroids = [a5.cell_to_lonlat(a5.hex_to_u64(idx)) for idx in grouped["a5_index"]]
     grouped["lon"] = [c[0] for c in centroids]
     grouped["lat"] = [c[1] for c in centroids]
     grouped["polygon"] = [_cell_to_polygon(idx) for idx in grouped["a5_index"]]

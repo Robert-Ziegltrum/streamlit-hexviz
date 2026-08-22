@@ -4,6 +4,7 @@ Value transforms and colour-scale mapping for grid data.
 Each transform returns a new Series of the same length, scaled to [0, 1]
 (or close to it) suitable for feeding into a colour scale.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -46,7 +47,9 @@ TRANSFORMS = {
 
 def apply_transform(values: pd.Series, transform: str = "linear") -> pd.Series:
     if transform not in TRANSFORMS:
-        raise ValueError(f"transform must be one of {list(TRANSFORMS)}, got {transform!r}")
+        raise ValueError(
+            f"transform must be one of {list(TRANSFORMS)}, got {transform!r}"
+        )
     return TRANSFORMS[transform](values)
 
 
@@ -137,4 +140,3 @@ def add_colour_column(
     df = df.copy()
     df["fill_color"] = [value_to_colour(v, colour_scale, alpha) for v in norm]
     return df
-

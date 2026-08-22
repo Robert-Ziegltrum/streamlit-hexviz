@@ -1,13 +1,13 @@
 """S2 grid utilities: point binning and cell aggregation."""
+
 from __future__ import annotations
 
-import math
 
-import numpy as np
 import pandas as pd
 
 try:
     import s2sphere as s2
+
     S2_AVAILABLE = True
 except ImportError:
     S2_AVAILABLE = False
@@ -18,7 +18,7 @@ def _require_s2() -> None:
         raise ImportError(
             "S2 support is an optional dependency.\n"
             "Install with:\n"
-            "  pip install \"streamlit-hexviz[s2]\"\n"
+            '  pip install "streamlit-hexviz[s2]"\n'
             "\n"
             "Or install directly:\n"
             "  pip install s2sphere"
@@ -57,11 +57,17 @@ def points_to_s2(
 
     work = df[[lat, lon]].copy()
     work["_weight"] = df[weight].values if weight else 1.0
-    work["s2_token"] = [_latlng_to_token(
-        row[lat], row[lon], level) for _, row in work.iterrows()]
+    work["s2_token"] = [
+        _latlng_to_token(row[lat], row[lon], level) for _, row in work.iterrows()
+    ]
 
-    agg_map = {"sum": "sum", "mean": "mean",
-               "count": "count", "max": "max", "min": "min"}
+    agg_map = {
+        "sum": "sum",
+        "mean": "mean",
+        "count": "count",
+        "max": "max",
+        "min": "min",
+    }
     if agg not in agg_map:
         raise ValueError(f"agg must be one of {list(agg_map)}, got {agg!r}")
 

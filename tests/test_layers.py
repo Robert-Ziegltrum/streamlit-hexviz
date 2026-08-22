@@ -40,4 +40,3 @@ def test_build_deck_auto_zoom_produces_reasonable_zoom():
     assert 0.0 <= zoom <= 16.0
     # NYC span should land in a city-ish zoom range.
     assert zoom >= 7.0
-

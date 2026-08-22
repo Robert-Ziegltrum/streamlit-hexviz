@@ -33,8 +33,7 @@ def test_a5_df_to_aggregated_accepts_hex_tokens():
     token = a5.u64_to_hex(cell)
     df = pd.DataFrame({"a5_index": [token, token], "metric": [1, 2]})
 
-    out = a5_df_to_aggregated(df, "a5_index", "metric",
-                              agg="sum", a5_index_type="hex")
+    out = a5_df_to_aggregated(df, "a5_index", "metric", agg="sum", a5_index_type="hex")
 
     assert out.loc[0, "a5_index"] == token
     assert out.loc[0, "value"] == 3
@@ -50,8 +49,7 @@ def test_a5_df_to_aggregated_accepts_int_ids_and_coerces_to_hex():
     token = a5.u64_to_hex(cell)
     df = pd.DataFrame({"a5_bigint": [cell, cell], "metric": [1, 2]})
 
-    out = a5_df_to_aggregated(
-        df, "a5_bigint", "metric", agg="sum", a5_index_type="int")
+    out = a5_df_to_aggregated(df, "a5_bigint", "metric", agg="sum", a5_index_type="int")
 
     assert out.loc[0, "a5_index"] == token
     assert out.loc[0, "value"] == 3
