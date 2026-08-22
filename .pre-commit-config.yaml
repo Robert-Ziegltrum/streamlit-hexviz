@@ -1,0 +1,67 @@
+# Pre-commit hooks — runs automatically on `git commit`, before code ever reaches CI.
+#
+# One-time setup per machine/repo:
+#   pip install pre-commit
+#   pre-commit install
+#
+# Run manually against the whole repo (e.g. first time, or after adding a hook):
+#   pre-commit run --all-files
+#
+# Keep hook versions current:
+#   pre-commit autoupdate
+
+repos:
+  # --- Generic hygiene checks (reusable in any repo, any language) ---
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-added-large-files
+        args: ["--maxkb=1000"]
+      - id: check-merge-conflict
+      - id: debug-statements # catches stray pdb/breakpoint() calls
+      - id: mixed-line-ending
+        args: ["--fix=lf"]
+
+  # --- Ruff: linting + import sorting (replaces flake8 + isort) ---
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.6
+    hooks:
+      - id: ruff
+        args: ["--fix", "--exit-non-zero-on-fix"]
+
+  # --- Black: formatting ---
+  # Keep this if you want to stay on Black. If you'd rather drop a tool,
+  # `ruff format` (from the same hook above) can replace Black entirely —
+  # see the note at the bottom of this file.
+  - repo: https://github.com/psf/black
+    rev: 24.10.0
+    hooks:
+      - id: black
+
+  # --- Optional: static type checking ---
+  # Uncomment once the project has enough type hints for this to be useful
+  # rather than noisy. Add per-project overrides in pyproject.toml under
+  # [tool.mypy] as needed (e.g. ignoring untyped third-party libs like h3/pydeck).
+  # - repo: https://github.com/pre-commit/mirrors-mypy
+  #   rev: v1.14.1
+  #   hooks:
+  #     - id: mypy
+  #       additional_dependencies: []  # add stub packages here if needed
+
+# ---------------------------------------------------------------------------
+# Note on Ruff vs. Black:
+# Since Ruff 0.1+, `ruff format` is a drop-in, much faster Black replacement.
+# If you want one fewer tool/dependency, you can delete the Black hook above
+# and instead add a second ruff hook entry:
+#
+#   - id: ruff-format
+#
+# This keeps everything (lint + format) in a single tool. Not done by default
+# here since streamlit-hexviz's current dev workflow (CLAUDE.md) explicitly
+# documents `ruff check .` and `black .` as separate steps — switching would
+# mean updating that doc and dropping the black dev-dependency too.
+# ---------------------------------------------------------------------------
