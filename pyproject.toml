@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "streamlit-hexviz"
-version = "0.2.0"
+version = "0.3.0"
 description = "Simple H3, S2 and A5 map visualizations for Streamlit"
 authors = ["Robert Ziegltrum <robert.ziegltrum@googlemail.com>"]
 readme = "README.md"

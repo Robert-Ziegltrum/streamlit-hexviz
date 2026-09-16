@@ -24,6 +24,7 @@ from streamlit_hexviz._a5_utils import (
     points_to_a5,
     validate_resolution as validate_a5_resolution,
 )
+from streamlit_hexviz._geo_utils import normalize_input
 from streamlit_hexviz._h3_utils import (
     h3_df_to_aggregated,
     points_to_h3,
@@ -87,6 +88,7 @@ def h3_map(
     -------
     Aggregated DataFrame: h3_index, value, lat, lon, fill_color, geometry
     """
+    df = normalize_input(df, lat, lon)
     validate_resolution(resolution)
 
     if use_sidebar_controls:
@@ -151,6 +153,8 @@ def h3_heatmap(
     -------
     Aggregated H3 DataFrame used as heatmap input.
     """
+    df = normalize_input(df, lat, lon)
+
     if use_sidebar_controls:
         resolution = st.sidebar.slider(
             "H3 resolution",
@@ -271,6 +275,8 @@ def s2_map(
     """
     from streamlit_hexviz._s2_utils import points_to_s2  # lazy import
 
+    df = normalize_input(df, lat, lon)
+
     if use_sidebar_controls:
         level = st.sidebar.slider(
             "S2 level",
@@ -350,6 +356,7 @@ def a5_map(
     -------
     Aggregated DataFrame: a5_index, value, lat, lon, fill_color
     """
+    df = normalize_input(df, lat, lon)
     validate_a5_resolution(resolution)
 
     if use_sidebar_controls:

@@ -38,10 +38,6 @@ shv.h3_map(df, lat="lat", lon="lon", resolution=7, use_sidebar_controls=True)
 # shv.h3_heatmap(df, lat="lat", lon="lon", resolution=7, use_sidebar_controls=True)
 
 
-shv.s2_map(df, lat="lat", lon="lon", level=12, use_sidebar_controls=True)
-# shv.s2_heatmap(df, lat="lat", lon="lon", level=12, use_sidebar_controls=True)
-
-
 np.random.seed(42)
 
 hexes = list(h3.grid_disk(h3.latlng_to_cell(40.7128, -74.0060, 8), 15))

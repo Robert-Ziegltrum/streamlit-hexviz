@@ -5,6 +5,20 @@
 [![Demo](https://img.shields.io/badge/demo-live-blue)](https://app-hexviz-example-app.streamlit.app/)
 [![PyPI version](https://img.shields.io/pypi/v/streamlit-hexviz)](https://pypi.org/project/streamlit-hexviz/)
 
+
+A lightweight, high-performance Streamlit component for rendering **H3**, **S2**, and **A5** spatial indices as interactive hexagonal maps powered by PyDeck.
+
+---
+
+## ⚡ Features
+
+- **Multi-Index Support:** Seamlessly handles H3, S2, and A5 spatial indexing.
+- **GeoPandas & Pandas Integration:** Pass standard `pandas.DataFrame` or `geopandas.GeoDataFrame` objects directly.
+- **Automatic Spatial Indexing:** Automatically converts `Point` geometries in a GeoDataFrame into spatial index cells.
+- **Streamlit Native:** Optimized for high-speed rendering in Streamlit applications.
+
+---
+
 ```python
 import streamlit_hexviz as shv
 
