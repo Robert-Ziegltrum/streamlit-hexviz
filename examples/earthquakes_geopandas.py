@@ -15,7 +15,8 @@ data = gpd.GeoDataFrame(
     geometry=gpd.points_from_xy(df["longitude"], df["latitude"]),
     crs="EPSG:4326",  # Standard WGS 84 latitude/longitude coordinate system
 )
-
+# dropping existing lat and lon column. Otherwise h3_map creates a warning.
+data = data.drop(columns=["latitude", "longitude"])
 shv.h3_map(data)
 
 st.info("use the navigation: recommended options: color: heat, transform log.")
