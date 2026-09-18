@@ -35,15 +35,15 @@ import streamlit_hexviz as shv
 import pandas as pd
 import streamlit as st
 
-st.write('## Earthquakes in California')
+st.write("## Earthquakes in California")
 
-data = pd.read_csv('data/earthquakes.csv')
+data = pd.read_csv("data/earthquakes.csv")
 data = data[data["place"].str.contains("CA", na=False)]
 
-shv.a5_map(df=data, lat='latitude', lon='longitude', use_sidebar_controls=True)
+shv.a5_map(df=data, lat="latitude", lon="longitude", use_sidebar_controls=True)
 ```
 
-## Japan container movements — pre-indexed H3
+## Japan movements — pre-indexed H3
 
 [`examples/japan_movements.py`](https://github.com/Robert-Ziegltrum/streamlit-hexviz/blob/main/examples/japan_movements.py)
 shows `h3_choropleth` with data that's already H3-indexed, rather than raw
@@ -54,9 +54,8 @@ import streamlit_hexviz as shv
 import pandas as pd
 import streamlit as st
 
-data = pd.read_csv('data/japan_movements.csv')
-shv.h3_choropleth(data, h3_col='point_res_7',
-                   value_col='count', h3_index_type='int')
+data = pd.read_csv("data/japan_movements.csv")
+shv.h3_choropleth(data, h3_col="point_res_7", value_col="count", h3_index_type="int")
 ```
 
 !!! tip

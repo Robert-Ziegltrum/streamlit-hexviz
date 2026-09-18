@@ -31,11 +31,6 @@ Choropleth from raw lat/lon points, binned into H3 hexagons.
 
 **Returns:** aggregated DataFrame with columns `h3_index`, `value`, `lat`, `lon`, `fill_color`, `geometry`.
 
-!!! warning "Known issue"
-    Using two `h3_map()` calls on the same page can hit a widget key
-    collision. Pass an explicit, unique `key` to each call until this is
-    resolved (tracked as [Issue #1](https://github.com/Robert-Ziegltrum/streamlit-hexviz/issues/1)).
-
 ---
 
 ## `shv.h3_heatmap(df, ...)`

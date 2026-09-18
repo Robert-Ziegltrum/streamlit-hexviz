@@ -5,6 +5,23 @@
 [![Demo](https://img.shields.io/badge/demo-live-blue)](https://app-hexviz-example-app.streamlit.app/)
 [![PyPI version](https://img.shields.io/pypi/v/streamlit-hexviz)](https://pypi.org/project/streamlit-hexviz/)
 
+
+A lightweight, high-performance Streamlit component for rendering **H3**, **S2**, and **A5** spatial indices as interactive hexagonal maps powered by PyDeck.
+
+---
+
+## ⚡ Features
+
+- **Multi-Index Support:** Seamlessly handles H3, S2, and A5 spatial indexing.
+- **Direct Conversion:** Directly converts points into spatial index grids.
+- **Direct Display of Indexes:**  Directly enables displaying pre-index data.
+- **GeoPandas & Pandas Integration:** Pass standard `pandas.DataFrame` or `geopandas.GeoDataFrame` objects directly.
+- **Automatic Spatial Indexing:** Automatically converts `Point` geometries in a GeoDataFrame into spatial index cells.
+- **Automatic Coordinate Detection:** Automatically converts `Point` geometries in a GeoDataFrame into spatial index cells.
+- **Streamlit Native:** Optimized for high-speed rendering in Streamlit applications.
+- **Simplicity:** simple small API  - no boilerplate required.
+---
+
 ```python
 import streamlit_hexviz as shv
 
@@ -22,6 +39,9 @@ shv.s2_map(df, lat="lat", lon="lon", level=12)
 
 # A5 grid (pentagonal cells, optional extra)
 shv.a5_map(df, lat="lat", lon="lon", weight="sales")
+
+# A5 grid (pentagonal cells, optional extra)
+shv.a5_cloropleth(df, a5_col="a5_column", weight="sales")
 ```
 
 Sidebar controls for resolution, colour scale, opacity, and 3-D extrusion are
@@ -193,16 +213,57 @@ below are computed directly via `a5.cell_area(resolution)`.
 
 ## Running the demo
 
-### Visualization the basic maps
+### Visualization of h3 map
 ```bash
-pip install streamlit h3 pydeck numpy pandas
+pip install streamlit_hexviz pandas numpy
 streamlit run examples/app_simple.py
 ```
+
+### Visualization of h3 cloropleth
+
+Displaying movement data in Japan, provided with pre-indexed and aggregated data.
+
+```bash
+pip install streamlit_hexviz
+streamlit run examples/japan_movements.py
+```
+
+
+
+### Visualization of h3 cloropleth
+
+Displaying movement data in Japan, provided with pre-indexed and aggregated data.
+
+```bash
+pip install streamlit_hexviz
+streamlit run examples/japan_movements.py
+```
+
+
+### Visualization of A5
+
+Displaying earthquake data in A5.
+
+```bash
+pip install streamlit_hexviz[a5]
+streamlit run examples/earthquakes.py
+```
+
+
+### Example for geopandas and H3
+
+Displaying earthquake data from a geopandas dataframe.
+
+```bash
+pip install streamlit_hexviz
+streamlit run examples/earthquakes.py
+```
+
 
 ### More interactive app demo
 
 ```bash
-pip install streamlit[s2,a5] h3 pydeck numpy pandas
+pip install streamlit_hexviz[s2,a5] h3 pydeck numpy pandas
 streamlit run examples/demo_app.py
 ```
 

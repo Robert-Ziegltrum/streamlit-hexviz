@@ -24,6 +24,7 @@ from streamlit_hexviz._a5_utils import (
     points_to_a5,
     validate_resolution as validate_a5_resolution,
 )
+from streamlit_hexviz._geo_utils import normalize_input
 from streamlit_hexviz._h3_utils import (
     h3_df_to_aggregated,
     points_to_h3,
@@ -47,8 +48,8 @@ from streamlit_hexviz._transforms import COLOUR_SCALES, add_colour_column
 def h3_map(
     df: pd.DataFrame,
     *,
-    lat: str = "lat",
-    lon: str = "lon",
+    lat: str | None = None,
+    lon: str | None = None,
     resolution: int = 7,
     weight: str | None = None,
     agg: str = "sum",
@@ -87,6 +88,7 @@ def h3_map(
     -------
     Aggregated DataFrame: h3_index, value, lat, lon, fill_color, geometry
     """
+    df, lat, lon = normalize_input(df, lat, lon)
     validate_resolution(resolution)
 
     if use_sidebar_controls:
@@ -131,8 +133,8 @@ def h3_map(
 def h3_heatmap(
     df: pd.DataFrame,
     *,
-    lat: str = "lat",
-    lon: str = "lon",
+    lat: str | None = None,
+    lon: str | None = None,
     resolution: int = 7,
     weight: str | None = None,
     radius_pixels: int = 40,
@@ -151,6 +153,8 @@ def h3_heatmap(
     -------
     Aggregated H3 DataFrame used as heatmap input.
     """
+    df, lat, lon = normalize_input(df, lat, lon)
+
     if use_sidebar_controls:
         resolution = st.sidebar.slider(
             "H3 resolution",
@@ -251,8 +255,8 @@ def h3_choropleth(
 def s2_map(
     df: pd.DataFrame,
     *,
-    lat: str = "lat",
-    lon: str = "lon",
+    lat: str | None = None,
+    lon: str | None = None,
     level: int = 12,
     weight: str | None = None,
     agg: str = "sum",
@@ -270,6 +274,8 @@ def s2_map(
     Requires the optional dependency extra: `pip install "streamlit-hexviz[s2]"`
     """
     from streamlit_hexviz._s2_utils import points_to_s2  # lazy import
+
+    df, lat, lon = normalize_input(df, lat, lon)
 
     if use_sidebar_controls:
         level = st.sidebar.slider(
@@ -310,8 +316,8 @@ def s2_map(
 def a5_map(
     df: pd.DataFrame,
     *,
-    lat: str = "lat",
-    lon: str = "lon",
+    lat: str | None = None,
+    lon: str | None = None,
     resolution: int = 11,
     weight: str | None = None,
     agg: str = "sum",
@@ -350,6 +356,7 @@ def a5_map(
     -------
     Aggregated DataFrame: a5_index, value, lat, lon, fill_color
     """
+    df, lat, lon = normalize_input(df, lat, lon)
     validate_a5_resolution(resolution)
 
     if use_sidebar_controls:

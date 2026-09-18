@@ -26,13 +26,15 @@ import pandas as pd
 
 st.title("H3 Viz")
 
-df = pd.DataFrame({
-    "lat": [40.7128, 40.7328, 40.6928],
-    "lon": [-74.0060, -74.0260, -73.9860],
-    "sales": [120, 80, 45],
-})
+df = pd.DataFrame(
+    {
+        "lat": [40.7128, 40.7328, 40.6928],
+        "lon": [-74.0060, -74.0260, -73.9860],
+        "sales": [120, 80, 45],
+    }
+)
 
-shv.h3_map(df, lat="lat", lon="lon", weight="sales")
+shv.h3_map(df, weight="sales")
 ```
 
 Run it with:
