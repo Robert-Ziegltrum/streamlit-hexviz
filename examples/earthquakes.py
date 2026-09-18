@@ -8,7 +8,7 @@ st.write("## Earthquakes in California")
 data = pd.read_csv("data/earthquakes.csv")
 data = data[data["place"].str.contains("CA", na=False)]
 
-shv.a5_map(df=data, lat="latitude", lon="longitude", use_sidebar_controls=True)
+shv.a5_map(df=data)
 
 st.dataframe(data.head(20))
 
@@ -20,7 +20,7 @@ import streamlit as st
 
 data = pd.read_csv('data/earthquakes.csv')
 
-shv.a5_map(df=data, lat='latitude', lon='longitude', use_sidebar_controls=True)
+shv.a5_map(df=data)
 
 st.dataframe(data.head(20))
 
